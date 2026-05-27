@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>대시보드</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- 요약 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">전체 직원</div>
+                        <div class="fw-bold fs-4">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-cart3"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">이달 수주</div>
+                        <div class="fw-bold fs-4">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">재고 품목</div>
+                        <div class="fw-bold fs-4">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-currency-won"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">이달 매출</div>
+                        <div class="fw-bold fs-4">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 빠른 메뉴 -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 pt-3">
+            <h6 class="mb-0 fw-semibold">빠른 메뉴</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a th:href="@{/hr/employees}" class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1">
+                        <i class="bi bi-people fs-4"></i><small>직원관리</small>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a th:href="@{/sales/orders}" class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1">
+                        <i class="bi bi-cart3 fs-4"></i><small>수주관리</small>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a th:href="@{/purchase/orders}" class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1">
+                        <i class="bi bi-bag-check fs-4"></i><small>발주관리</small>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a th:href="@{/inventory/stock}" class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1">
+                        <i class="bi bi-box-seam fs-4"></i><small>재고현황</small>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a th:href="@{/accounting/ledger}" class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1">
+                        <i class="bi bi-journal-text fs-4"></i><small>전표관리</small>
+                    </a>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a th:href="@{/accounting/reports}" class="btn btn-outline-secondary w-100 d-flex flex-column align-items-center py-3 gap-1">
+                        <i class="bi bi-bar-chart-line fs-4"></i><small>재무보고서</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
