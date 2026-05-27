@@ -1,9 +1,5 @@
 package com.erp.accessory.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,10 +8,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * JWT 토큰 검증 필터 - 모든 요청에서 Authorization 헤더를 확인
+ * JWT 토큰 검증 필터
  */
 @Component
 @RequiredArgsConstructor
@@ -29,7 +29,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String token = extractToken(request);
-
         if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
             Integer userId = tokenProvider.getUserIdFromToken(token);
             UserDetails userDetails = userDetailsService.loadUserByUserId(userId);
@@ -37,7 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
-
         chain.doFilter(request, response);
     }
 

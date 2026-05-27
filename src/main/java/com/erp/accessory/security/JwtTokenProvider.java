@@ -12,9 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
- * JWT 토큰 생성·검증 유틸리티
- * - Access Token: 30분 유효
- * - Refresh Token: 7일 유효
+ * JWT 토큰 생성·검증 (jjwt 0.11.x API)
  */
 @Slf4j
 @Component
@@ -41,7 +39,6 @@ public class JwtTokenProvider {
         return buildToken((UserPrincipal) auth.getPrincipal(), refreshTokenExpiry);
     }
 
-    /** 토큰 직접 생성 (Refresh Token 갱신 시 사용) */
     public String generateTokenFromPrincipal(UserPrincipal principal) {
         return buildToken(principal, accessTokenExpiry);
     }
@@ -49,12 +46,12 @@ public class JwtTokenProvider {
     private String buildToken(UserPrincipal p, long expiryMs) {
         Date now = new Date();
         return Jwts.builder()
-                .subject(String.valueOf(p.getUserId()))
+                .setSubject(String.valueOf(p.getUserId()))
                 .claim("role", p.getRole())
                 .claim("storeId", p.getStoreId())
                 .claim("staffId", p.getStaffId())
-                .issuedAt(now)
-                .expiration(new Date(now.getTime() + expiryMs))
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + expiryMs))
                 .signWith(key)
                 .compact();
     }
@@ -74,10 +71,10 @@ public class JwtTokenProvider {
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

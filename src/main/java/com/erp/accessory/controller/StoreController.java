@@ -8,12 +8,12 @@ import com.erp.accessory.exception.ApiResponse;
 import com.erp.accessory.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -27,8 +27,6 @@ import java.util.Map;
 public class StoreController {
 
     private final StoreService storeService;
-
-    /* ===== 점포 ===== */
 
     @Operation(summary = "점포 목록")
     @GetMapping("/stores")
@@ -49,7 +47,7 @@ public class StoreController {
         return ResponseEntity.ok(ApiResponse.success(storeService.createStore(req)));
     }
 
-    @Operation(summary = "점포 수정 (ADMIN 전용)")
+    @Operation(summary = "점포 수정")
     @PutMapping("/stores/{storeId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> updateStore(
@@ -58,8 +56,6 @@ public class StoreController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 
-    /* ===== 직원 ===== */
-
     @Operation(summary = "직원 목록")
     @GetMapping("/staff")
     public ResponseEntity<ApiResponse<List<Staff>>> getStaff(
@@ -67,7 +63,7 @@ public class StoreController {
         return ResponseEntity.ok(ApiResponse.success(storeService.getStaff(storeId)));
     }
 
-    @Operation(summary = "직원 등록 (ADMIN/MANAGER)")
+    @Operation(summary = "직원 등록")
     @PostMapping("/staff")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResponseEntity<ApiResponse<Staff>> createStaff(@Valid @RequestBody StaffRequest req) {

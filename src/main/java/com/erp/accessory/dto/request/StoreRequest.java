@@ -1,6 +1,6 @@
 package com.erp.accessory.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import java.time.LocalDate;
 
