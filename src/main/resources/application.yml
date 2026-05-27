@@ -1,142 +1,68 @@
-# 다점포 악세사리 ERP 시스템 - Spring Boot 설정
+# 공통 설정
 spring:
   application:
     name: accessory-erp
   profiles:
-    active: dev  # 기본 프로파일: dev
-
-  # 공통 데이터소스 설정 (프로파일별로 오버라이드)
-  datasource:
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-  # MyBatis 설정
-  mybatis:
-    mapper-locations: classpath:mapper/**/*.xml
-    type-aliases-package: com.erp.accessory.entity
-    configuration:
-      map-underscore-to-camel-case: true  # 스네이크케이스 -> 카멜케이스 자동 변환
-      default-fetch-size: 100
-      default-statement-timeout: 30
-      log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
-
-  # JSON 직렬화 설정
+    active: dev
   jackson:
-    date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Seoul
-    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
 
-  # 파일 업로드 설정
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 30MB
-
-# 서버 설정
 server:
   port: 8080
   servlet:
-    context-path: /api
-  error:
-    include-message: always
-    include-binding-errors: always
+    encoding:
+      charset: UTF-8
+      force: true
 
-# Springdoc OpenAPI (Swagger) 설정
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.erp.accessory.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+
+jwt:
+  secret: erp-accessory-secret-key-must-be-at-least-32-characters!!
+  access-token-expiry: 1800000
+  refresh-token-expiry: 604800000
+
+cors:
+  allowed-origins: http://localhost:3000
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
   api-docs:
-    path: /v3/api-docs
-  default-consumes-media-type: application/json
-  default-produces-media-type: application/json
+    path: /api-docs
 
-# 로깅 설정
 logging:
   level:
-    com.erp.accessory: DEBUG
-    org.mybatis: DEBUG
-    org.springframework.security: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    com.erp.accessory.mapper: DEBUG
 
 ---
-# ========================
-# 개발 프로파일 (dev)
-# ========================
+# 개발 환경
 spring:
   config:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=accessory_erp_dev;encrypt=false;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;databaseName=ACCESSORY_ERP;encrypt=false;trustServerCertificate=true
     username: sa
-    password: DevPass1234!
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 20000
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      pool-name: HikariPool-Dev
-
-# JWT 설정 (dev)
-app:
-  jwt:
-    secret: dev-secret-key-accessory-erp-system-must-be-256-bits-long-for-hs256-algorithm
-    access-token-expiry: 3600000      # 1시간 (밀리초)
-    refresh-token-expiry: 604800000   # 7일 (밀리초)
-  cors:
-    allowed-origins:
-      - http://localhost:3000
-      - http://localhost:3001
-  upload:
-    path: /tmp/accessory-erp/uploads
-  low-stock-threshold: 10  # 재고 부족 기준 수량
-
-logging:
-  level:
-    com.erp.accessory: DEBUG
-    org.mybatis.spring: DEBUG
+    password: your_password_here
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
 ---
-# ========================
-# 운영 프로파일 (prod)
-# ========================
+# 운영 환경
 spring:
   config:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:accessory_erp};encrypt=true;trustServerCertificate=false
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    hikari:
-      maximum-pool-size: 50
-      minimum-idle: 10
-      connection-timeout: 20000
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      pool-name: HikariPool-Prod
 
-server:
-  port: ${SERVER_PORT:8080}
-
-# JWT 설정 (prod) - 환경변수로 주입
-app:
-  jwt:
-    secret: ${JWT_SECRET}
-    access-token-expiry: 3600000
-    refresh-token-expiry: 604800000
-  cors:
-    allowed-origins:
-      - ${FRONTEND_URL:https://erp.yourdomain.com}
-  upload:
-    path: ${UPLOAD_PATH:/var/accessory-erp/uploads}
-  low-stock-threshold: ${LOW_STOCK_THRESHOLD:10}
-
-logging:
-  level:
-    com.erp.accessory: INFO
-    org.mybatis: WARN
-    org.springframework.security: WARN
+jwt:
+  secret: ${JWT_SECRET}

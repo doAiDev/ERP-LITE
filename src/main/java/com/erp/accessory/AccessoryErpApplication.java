@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * 다점포 악세사리 ERP 시스템 메인 애플리케이션
- * - Spring Boot 3.2.5 기반
- * - @EnableScheduling: 정기 스케줄링 활성화 (등급 업데이트, 일일 정산 등)
+ * 다점포 악세사리 ERP 애플리케이션 메인 클래스
  */
 @SpringBootApplication
 @EnableScheduling
