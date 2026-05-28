@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
@@ -18,8 +18,8 @@ export default function LoginPage() {
       const res = await api.post('/auth/login', form)
       login(res.data.data)
       navigate('/')
-    } catch {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.')
+    } catch (e) {
+      setError(e.response?.data?.message || '아이디 또는 비밀번호가 올바르지 않습니다.')
     } finally {
       setLoading(false)
     }
@@ -67,6 +67,12 @@ export default function LoginPage() {
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
+        <p className="text-center text-sm text-gray-500 mt-6">
+          아직 계정이 없으신가요?{' '}
+          <Link to="/register" className="text-blue-600 font-medium hover:underline">
+            가입 신청
+          </Link>
+        </p>
       </div>
     </div>
   )
