@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.accessory.mapper.SaleMapper">
+
+    <select id="findSales" resultType="Sale">
+        SELECT s.sale_id, s.store_id, s.staff_id, s.customer_id,
+               s.sale_date, s.total_amount, s.discount_amount,
+               s.payment_method, s.source, s.is_refunded AS refunded,
+               st.name AS store_name, sf.name AS staff_name, c.name AS customer_name
+        FROM sales s
+        JOIN stores st ON s.store_id = st.store_id
+        LEFT JOIN staff sf ON s.staff_id = sf.staff_id
+        LEFT JOIN customers c ON s.customer_id = c.customer_id
+        <where>
+            <if test="storeId != null">AND s.store_id = #{storeId}</if>
+            <if test="startDate != null">AND CAST(s.sale_date AS DATE) &gt;= #{startDate}</if>
+            <if test="endDate != null">AND CAST(s.sale_date AS DATE) &lt;= #{endDate}</if>
+        </where>
+        ORDER BY s.sale_id DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countSales" resultType="int">
+        SELECT COUNT(*) FROM sales s
+        <where>
+            <if test="storeId != null">AND s.store_id = #{storeId}</if>
+            <if test="startDate != null">AND CAST(s.sale_date AS DATE) &gt;= #{startDate}</if>
+            <if test="endDate != null">AND CAST(s.sale_date AS DATE) &lt;= #{endDate}</if>
+        </where>
+    </select>
+
+    <select id="findById" resultType="Sale">
+        SELECT s.sale_id, s.store_id, s.staff_id, s.customer_id,
+               s.sale_date, s.total_amount, s.discount_amount,
+               s.payment_method, s.source, s.is_refunded AS refunded,
+               st.name AS store_name, sf.name AS staff_name, c.name AS customer_name
+        FROM sales s
+        JOIN stores st ON s.store_id = st.store_id
+        LEFT JOIN staff sf ON s.staff_id = sf.staff_id
+        LEFT JOIN customers c ON s.customer_id = c.customer_id
+        WHERE s.sale_id = #{saleId}
+    </select>
+
+    <select id="findItemsBySaleId" resultType="SaleItem">
+        SELECT si.item_id, si.sale_id, si.variant_id, si.quantity, si.unit_price, si.discount_rate,
+               p.name AS product_name, pv.sku
+        FROM sale_items si
+        JOIN product_variants pv ON si.variant_id = pv.variant_id
+        JOIN products p ON pv.product_id = p.product_id
+        WHERE si.sale_id = #{saleId}
+    </select>
+
+    <insert id="insertSale" parameterType="Sale" useGeneratedKeys="true" keyProperty="saleId">
+        INSERT INTO sales (store_id, staff_id, customer_id, total_amount, discount_amount, payment_method, source)
+        VALUES (#{storeId}, #{staffId}, #{customerId}, #{totalAmount}, #{discountAmount}, #{paymentMethod}, 'manual')
+    </insert>
+
+    <insert id="insertSaleItem" parameterType="SaleItem">
+        INSERT INTO sale_items (sale_id, variant_id, quantity, unit_price, discount_rate)
+        VALUES (#{saleId}, #{variantId}, #{quantity}, #{unitPrice}, #{discountRate})
+    </insert>
+
+    <update id="markRefunded">
+        UPDATE sales SET is_refunded = 1 WHERE sale_id = #{saleId}
+    </update>
+
+    <select id="getTodayStats" resultType="map">
+        SELECT COUNT(*) AS sale_count,
+               ISNULL(SUM(total_amount), 0) AS total_sales,
+               ISNULL(SUM(CASE WHEN payment_method = 'cash' THEN total_amount ELSE 0 END), 0) AS cash_amount,
+               ISNULL(SUM(CASE WHEN payment_method = 'card' THEN total_amount ELSE 0 END), 0) AS card_amount
+        FROM sales
+        WHERE CAST(sale_date AS DATE) = CAST(GETDATE() AS DATE) AND is_refunded = 0
+        <if test="storeId != null">AND store_id = #{storeId}</if>
+    </select>
+
+</mapper>

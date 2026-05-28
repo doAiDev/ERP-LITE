@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.accessory.mapper.CustomerMapper">
+
+    <select id="findCustomers" resultType="Customer">
+        SELECT customer_id, name, phone, email, birth_date, grade,
+               total_purchase_amount, visit_count, point_balance, created_at, created_store_id
+        FROM customers
+        <where>
+            <if test="search != null and search != ''">AND (name LIKE '%' + #{search} + '%' OR phone LIKE '%' + #{search} + '%')</if>
+            <if test="grade != null and grade != ''">AND grade = #{grade}</if>
+        </where>
+        ORDER BY customer_id DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countCustomers" resultType="int">
+        SELECT COUNT(*) FROM customers
+        <where>
+            <if test="search != null and search != ''">AND (name LIKE '%' + #{search} + '%' OR phone LIKE '%' + #{search} + '%')</if>
+            <if test="grade != null and grade != ''">AND grade = #{grade}</if>
+        </where>
+    </select>
+
+    <select id="findById" resultType="Customer">
+        SELECT customer_id, name, phone, email, birth_date, grade,
+               total_purchase_amount, visit_count, point_balance, created_at, created_store_id
+        FROM customers WHERE customer_id = #{customerId}
+    </select>
+
+    <insert id="insertCustomer" parameterType="Customer" useGeneratedKeys="true" keyProperty="customerId">
+        INSERT INTO customers (name, phone, email, birth_date, grade, created_store_id)
+        VALUES (#{name}, #{phone}, #{email}, #{birthDate}, 'bronze', #{createdStoreId})
+    </insert>
+
+    <update id="updateCustomer" parameterType="Customer">
+        UPDATE customers SET name=#{name}, phone=#{phone}, email=#{email}, birth_date=#{birthDate}
+        WHERE customer_id=#{customerId}
+    </update>
+
+    <update id="updateAfterSale">
+        UPDATE customers
+        SET total_purchase_amount = total_purchase_amount + #{amount}, visit_count = visit_count + 1
+        WHERE customer_id = #{customerId}
+    </update>
+
+    <update id="updatePoints">
+        UPDATE customers SET point_balance = point_balance + #{delta} WHERE customer_id = #{customerId}
+    </update>
+
+    <insert id="insertPointTransaction" parameterType="PointTransaction">
+        INSERT INTO point_transactions (customer_id, type, amount, balance_after, description, sale_id)
+        VALUES (#{customerId}, #{type}, #{amount}, #{balanceAfter}, #{description}, #{saleId})
+    </insert>
+
+</mapper>

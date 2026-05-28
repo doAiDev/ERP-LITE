@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.accessory.mapper.PurchaseMapper">
+
+    <select id="findOrders" resultType="PurchaseOrder">
+        SELECT po.order_id, po.supplier_id, po.store_id, po.order_date, po.expected_date,
+               po.status, po.total_amount, po.notes, po.created_by,
+               s.name AS supplier_name, st.name AS store_name
+        FROM purchase_orders po
+        JOIN suppliers s ON po.supplier_id = s.supplier_id
+        JOIN stores st ON po.store_id = st.store_id
+        <where>
+            <if test="status != null and status != ''">AND po.status = #{status}</if>
+            <if test="supplierId != null">AND po.supplier_id = #{supplierId}</if>
+        </where>
+        ORDER BY po.order_id DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countOrders" resultType="int">
+        SELECT COUNT(*) FROM purchase_orders po
+        <where>
+            <if test="status != null and status != ''">AND po.status = #{status}</if>
+            <if test="supplierId != null">AND po.supplier_id = #{supplierId}</if>
+        </where>
+    </select>
+
+    <select id="findById" resultType="PurchaseOrder">
+        SELECT po.order_id, po.supplier_id, po.store_id, po.order_date, po.expected_date,
+               po.status, po.total_amount, po.notes, po.created_by,
+               s.name AS supplier_name, st.name AS store_name
+        FROM purchase_orders po
+        JOIN suppliers s ON po.supplier_id = s.supplier_id
+        JOIN stores st ON po.store_id = st.store_id
+        WHERE po.order_id = #{orderId}
+    </select>
+
+    <select id="findItemsByOrderId" resultType="PurchaseOrderItem">
+        SELECT poi.order_item_id, poi.order_id, poi.variant_id,
+               poi.ordered_qty, poi.received_qty, poi.unit_cost,
+               p.name AS product_name, pv.sku,
+               CASE WHEN poi.ordered_qty > 0
+                    THEN CAST(poi.received_qty AS FLOAT) / poi.ordered_qty * 100
+                    ELSE 0 END AS received_rate
+        FROM purchase_order_items poi
+        JOIN product_variants pv ON poi.variant_id = pv.variant_id
+        JOIN products p ON pv.product_id = p.product_id
+        WHERE poi.order_id = #{orderId}
+    </select>
+
+    <insert id="insertOrder" parameterType="PurchaseOrder" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO purchase_orders (supplier_id, store_id, expected_date, status, total_amount, notes, created_by)
+        VALUES (#{supplierId}, #{storeId}, #{expectedDate}, 'draft', #{totalAmount}, #{notes}, #{createdBy})
+    </insert>
+
+    <insert id="insertOrderItem" parameterType="PurchaseOrderItem">
+        INSERT INTO purchase_order_items (order_id, variant_id, ordered_qty, unit_cost)
+        VALUES (#{orderId}, #{variantId}, #{orderedQty}, #{unitCost})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE purchase_orders SET status = #{status} WHERE order_id = #{orderId}
+    </update>
+
+    <insert id="insertReceipt" parameterType="GoodsReceipt" useGeneratedKeys="true" keyProperty="receiptId">
+        INSERT INTO goods_receipts (order_id, received_by, notes)
+        VALUES (#{orderId}, #{receivedBy}, #{notes})
+    </insert>
+
+    <insert id="insertReceiptItem" parameterType="GoodsReceiptItem">
+        INSERT INTO goods_receipt_items (receipt_id, variant_id, received_qty, condition)
+        VALUES (#{receiptId}, #{variantId}, #{receivedQty}, #{condition})
+    </insert>
+
+    <update id="addReceivedQty">
+        UPDATE purchase_order_items SET received_qty = received_qty + #{qty}
+        WHERE order_id = #{orderId} AND variant_id = #{variantId}
+    </update>
+
+    <select id="countPendingItems" resultType="int">
+        SELECT COUNT(*) FROM purchase_order_items
+        WHERE order_id = #{orderId} AND received_qty &lt; ordered_qty
+    </select>
+
+    <update id="incrementInventory">
+        MERGE store_inventory AS t
+        USING (SELECT #{storeId} AS store_id, #{variantId} AS variant_id) AS s
+        ON t.store_id = s.store_id AND t.variant_id = s.variant_id
+        WHEN MATCHED THEN UPDATE SET t.quantity = t.quantity + #{qty}, t.updated_at = GETDATE()
+        WHEN NOT MATCHED THEN INSERT (store_id, variant_id, quantity, min_quantity)
+            VALUES (#{storeId}, #{variantId}, #{qty}, 0);
+    </update>
+
+    <select id="findAllSuppliers" resultType="Supplier">
+        SELECT supplier_id, name AS supplier_name, contact_name, phone, email
+        FROM suppliers WHERE is_active = 1 ORDER BY name
+    </select>
+
+</mapper>
