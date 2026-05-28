@@ -11,68 +11,45 @@ export default function AdminPage() {
   const [processing, setProcessing] = useState(null)
 
   useEffect(() => {
-    if (user?.role !== 'ADMIN') {
-      navigate('/')
-      return
-    }
+    if (user?.role !== 'admin') { navigate('/'); return }
     fetchPending()
   }, [])
 
   const fetchPending = async () => {
     setLoading(true)
-    try {
-      const r = await api.get('/api/admin/users/pending')
-      setPending(r.data.data || [])
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
+    try { const r = await api.get('/api/admin/users/pending'); setPending(r.data.data || []) }
+    catch (e) { console.error(e) }
+    finally { setLoading(false) }
   }
 
   const handleApprove = async (userId) => {
     setProcessing(userId)
-    try {
-      await api.post(`/api/admin/users/${userId}/approve`)
-      setPending(p => p.filter(u => u.userId !== userId))
-    } catch (e) {
-      alert(e.response?.data?.message || '오류가 발생했습니다.')
-    } finally {
-      setProcessing(null)
-    }
+    try { await api.post(`/api/admin/users/${userId}/approve`); setPending(p => p.filter(u => u.userId !== userId)) }
+    catch (e) { alert(e.response?.data?.message || '오류') }
+    finally { setProcessing(null) }
   }
 
   const handleReject = async (userId, username) => {
     if (!confirm(`'${username}' 계정을 삭제하시겠습니까?`)) return
     setProcessing(userId)
-    try {
-      await api.delete(`/api/admin/users/${userId}`)
-      setPending(p => p.filter(u => u.userId !== userId))
-    } catch (e) {
-      alert(e.response?.data?.message || '오류가 발생했습니다.')
-    } finally {
-      setProcessing(null)
-    }
+    try { await api.delete(`/api/admin/users/${userId}`); setPending(p => p.filter(u => u.userId !== userId)) }
+    catch (e) { alert(e.response?.data?.message || '오류') }
+    finally { setProcessing(null) }
   }
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">관리자</h2>
-        <p className="text-gray-500 text-sm mt-1">가입 승인 대기 중인 계정을 관리합니다.</p>
+        <h2 className="text-2xl font-bold text-gray-800">가입 승인 관리</h2>
+        <p className="text-gray-500 text-sm mt-1">승인 대기 중인 계정을 관리합니다.</p>
       </div>
-
       <div className="bg-white rounded-xl shadow">
         <div className="px-6 py-4 border-b flex items-center justify-between">
           <h3 className="font-semibold text-gray-700">승인 대기 목록</h3>
-          <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2.5 py-1 rounded-full">
-            {pending.length}명
-          </span>
+          <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2.5 py-1 rounded-full">{pending.length}명</span>
         </div>
-
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">불러오는 중...</div>
-        ) : pending.length === 0 ? (
+        {loading ? <div className="text-center py-12 text-gray-400">불러오는 중...</div>
+        : pending.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-4xl mb-3">✅</div>
             <p className="text-gray-400 text-sm">승인 대기 중인 계정이 없습니다.</p>
@@ -95,26 +72,12 @@ export default function AdminPage() {
                   <td className="px-6 py-4 text-gray-600 font-mono">{u.username}</td>
                   <td className="px-6 py-4 text-gray-600">{u.storeName || '-'}</td>
                   <td className="px-6 py-4">
-                    <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">
-                      {u.role === 'ADMIN' ? '관리자' : u.role === 'MANAGER' ? '매니저' : '직원'}
-                    </span>
+                    <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">{u.role === 'admin' ? '관리자' : u.role === 'manager' ? '매니저' : '직원'}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handleApprove(u.userId)}
-                        disabled={processing === u.userId}
-                        className="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-green-700 disabled:opacity-60"
-                      >
-                        {processing === u.userId ? '...' : '승인'}
-                      </button>
-                      <button
-                        onClick={() => handleReject(u.userId, u.username)}
-                        disabled={processing === u.userId}
-                        className="bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg hover:bg-red-200 disabled:opacity-60"
-                      >
-                        거절
-                      </button>
+                      <button onClick={() => handleApprove(u.userId)} disabled={processing===u.userId} className="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-green-700 disabled:opacity-60">{processing===u.userId?'...':'승인'}</button>
+                      <button onClick={() => handleReject(u.userId, u.username)} disabled={processing===u.userId} className="bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg hover:bg-red-200 disabled:opacity-60">거절</button>
                     </div>
                   </td>
                 </tr>

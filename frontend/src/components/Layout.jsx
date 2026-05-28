@@ -5,20 +5,18 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+  const handleLogout = () => { logout(); navigate('/login') }
 
   const navItems = [
     { path: '/', label: '대시보드', icon: '📊' },
     { path: '/products', label: '상품 관리', icon: '📦' },
     { path: '/inventory', label: '재고 관리', icon: '🗂️' },
+    { path: '/customers', label: '고객 관리', icon: '👥' },
+    { path: '/sales', label: '매출 관리', icon: '💰' },
+    { path: '/purchase', label: '발주 / 입고', icon: '🚚' },
   ]
 
-  const adminItems = [
-    { path: '/admin', label: '관리자', icon: '🔧' },
-  ]
+  const isAdmin = user?.role === 'admin'
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -29,48 +27,33 @@ export default function Layout() {
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
+            <NavLink key={item.path} to={item.path} end={item.path === '/'}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition ${
                   isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
-                }`
-              }
-            >
-              <span>{item.icon}</span>
-              {item.label}
+                }`}>
+              <span>{item.icon}</span>{item.label}
             </NavLink>
           ))}
-
-          {user?.role === 'ADMIN' && (
+          {isAdmin && (
             <>
               <div className="pt-3 pb-1">
                 <p className="text-xs text-gray-500 uppercase tracking-wider px-4">관리</p>
               </div>
-              {adminItems.map(item => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition ${
-                      isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
-                    }`
-                  }
-                >
-                  <span>{item.icon}</span>
-                  {item.label}
-                </NavLink>
-              ))}
+              <NavLink to="/admin"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition ${
+                    isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-800'
+                  }`}>
+                <span>🔧</span>가입 승인
+              </NavLink>
             </>
           )}
         </nav>
         <div className="p-4 border-t border-gray-700">
-          <button
-            onClick={handleLogout}
-            className="w-full text-left text-sm text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
-          >
+          <p className="text-xs text-gray-500 px-4 mb-1">{user?.role?.toUpperCase()}</p>
+          <button onClick={handleLogout}
+            className="w-full text-left text-sm text-gray-400 hover:text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
             🚶 로그아웃
           </button>
         </div>
