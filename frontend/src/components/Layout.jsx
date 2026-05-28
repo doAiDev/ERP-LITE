@@ -8,12 +8,13 @@ export default function Layout() {
   const handleLogout = () => { logout(); navigate('/login') }
 
   const navItems = [
-    { path: '/', label: '대시보드', icon: '📊' },
-    { path: '/products', label: '상품 관리', icon: '📦' },
-    { path: '/inventory', label: '재고 관리', icon: '🗂️' },
-    { path: '/customers', label: '고객 관리', icon: '👥' },
-    { path: '/sales', label: '매출 관리', icon: '💰' },
-    { path: '/purchase', label: '발주 / 입고', icon: '🚚' },
+    { path: '/',          label: '대시보드',   icon: '📊' },
+    { path: '/products',  label: '상품 관리',  icon: '📦' },
+    { path: '/inventory', label: '재고 관리',  icon: '🗂️' },
+    { path: '/customers', label: '고객 관리',  icon: '👥' },
+    { path: '/sales',     label: '매출 관리',  icon: '💰' },
+    { path: '/purchase',  label: '발주 / 입고', icon: '🚚' },
+    { path: '/suppliers', label: '공급업체',   icon: '🏭' },
   ]
 
   const isAdmin = user?.role === 'admin'

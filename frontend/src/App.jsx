@@ -8,6 +8,7 @@ import InventoryPage from './pages/InventoryPage'
 import CustomersPage from './pages/CustomersPage'
 import SalesPage from './pages/SalesPage'
 import PurchasePage from './pages/PurchasePage'
+import SuppliersPage from './pages/SuppliersPage'
 import AdminPage from './pages/AdminPage'
 import Layout from './components/Layout'
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="customers" element={<CustomersPage />} />
             <Route path="sales" element={<SalesPage />} />
             <Route path="purchase" element={<PurchasePage />} />
+            <Route path="suppliers" element={<SuppliersPage />} />
             <Route path="admin" element={<AdminPage />} />
           </Route>
         </Routes>
