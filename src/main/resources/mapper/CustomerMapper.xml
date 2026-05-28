@@ -50,8 +50,8 @@
     </update>
 
     <insert id="insertPointTransaction" parameterType="PointTransaction">
-        INSERT INTO point_transactions (customer_id, type, amount, balance_after, description, sale_id)
-        VALUES (#{customerId}, #{type}, #{amount}, #{balanceAfter}, #{description}, #{saleId})
+        INSERT INTO point_transactions (customer_id, [type], amount, balance_after, description, sale_id)
+        VALUES (#{customerId}, #{txType}, #{amount}, #{balanceAfter}, #{description}, #{saleId})
     </insert>
 
 </mapper>

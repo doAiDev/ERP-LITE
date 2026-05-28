@@ -86,7 +86,7 @@ public class SaleService {
                 Customer c = customerMapper.findById(req.getCustomerId());
                 PointTransaction pt = new PointTransaction();
                 pt.setCustomerId(req.getCustomerId());
-                pt.setType("earn");
+                pt.setTxType("earn");
                 pt.setAmount(earned);
                 pt.setBalanceAfter(c.getPointBalance());
                 pt.setDescription("매출 적립 (ID:" + sale.getSaleId() + ")");
