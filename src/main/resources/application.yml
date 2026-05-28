@@ -22,6 +22,7 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
     default-fetch-size: 100
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 jwt:
   secret: erp-accessory-secret-key-must-be-at-least-32-characters!!
@@ -39,7 +40,7 @@ springdoc:
 
 logging:
   level:
-    com.erp.accessory.mapper: DEBUG
+    com.erp.accessory.mapper: TRACE
 
 ---
 # 개발 환경
