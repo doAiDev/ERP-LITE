@@ -4,35 +4,26 @@
 
 <mapper namespace="com.erp.accessory.mapper.StoreMapper">
 
-    <!-- 점포 목록 -->
     <select id="findAllStores" resultType="Store">
         SELECT store_id, name, address, phone, opened_at, is_active AS active, created_at
-        FROM stores
-        WHERE is_active = 1
-        ORDER BY store_id
+        FROM stores WHERE is_active = 1 ORDER BY store_id
     </select>
 
-    <!-- 점포 단건 -->
     <select id="findStoreById" resultType="Store">
         SELECT store_id, name, address, phone, opened_at, is_active AS active, created_at
-        FROM stores
-        WHERE store_id = #{storeId}
+        FROM stores WHERE store_id = #{storeId}
     </select>
 
-    <!-- 점포 등록 -->
     <insert id="insertStore" parameterType="Store" useGeneratedKeys="true" keyProperty="storeId">
         INSERT INTO stores (name, address, phone, opened_at)
         VALUES (#{name}, #{address}, #{phone}, #{openedAt})
     </insert>
 
-    <!-- 점포 수정 -->
     <update id="updateStore" parameterType="Store">
-        UPDATE stores
-        SET name = #{name}, address = #{address}, phone = #{phone}
+        UPDATE stores SET name = #{name}, address = #{address}, phone = #{phone}
         WHERE store_id = #{storeId}
     </update>
 
-    <!-- 직원 목록 (storeId 없으면 전체 조회) -->
     <select id="findAllStaff" resultType="Staff">
         SELECT s.staff_id, s.store_id, s.name, s.phone, s.role,
                s.is_active AS active, s.created_at, st.name AS store_name
@@ -40,14 +31,11 @@
         JOIN stores st ON s.store_id = st.store_id
         <where>
             s.is_active = 1
-            <if test="storeId != null">
-                AND s.store_id = #{storeId}
-            </if>
+            <if test="storeId != null">AND s.store_id = #{storeId}</if>
         </where>
         ORDER BY s.store_id, s.staff_id
     </select>
 
-    <!-- 직원 단건 -->
     <select id="findStaffById" resultType="Staff">
         SELECT s.staff_id, s.store_id, s.name, s.phone, s.role,
                s.is_active AS active, s.created_at, st.name AS store_name
@@ -56,37 +44,34 @@
         WHERE s.staff_id = #{staffId}
     </select>
 
-    <!-- 직원 등록 -->
     <insert id="insertStaff" parameterType="Staff" useGeneratedKeys="true" keyProperty="staffId">
         INSERT INTO staff (store_id, name, phone, role)
         VALUES (#{storeId}, #{name}, #{phone}, #{role})
     </insert>
 
-    <!-- 직원 정보 수정 -->
     <update id="updateStaff" parameterType="Staff">
-        UPDATE staff
-        SET name = #{name}, phone = #{phone}
-        WHERE staff_id = #{staffId}
+        UPDATE staff SET name = #{name}, phone = #{phone} WHERE staff_id = #{staffId}
     </update>
 
-    <!-- 계정 등록 -->
     <insert id="insertAuthUser" parameterType="AuthUser">
         INSERT INTO auth_users (staff_id, username, hashed_password)
         VALUES (#{staffId}, #{username}, #{hashedPassword})
     </insert>
 
-    <!-- username으로 사용자 조회 (로그인) -->
+    <insert id="insertAuthUserPending" parameterType="AuthUser">
+        INSERT INTO auth_users (staff_id, username, hashed_password, is_active)
+        VALUES (#{staffId}, #{username}, #{hashedPassword}, 0)
+    </insert>
+
     <select id="findAuthUserByUsername" resultType="AuthUser">
         SELECT au.user_id, au.staff_id, au.username, au.hashed_password,
                au.last_login, au.is_active AS active,
                s.role, s.store_id, s.name AS staff_name
         FROM auth_users au
         JOIN staff s ON au.staff_id = s.staff_id
-        WHERE au.username = #{username}
-          AND au.is_active = 1
+        WHERE au.username = #{username} AND au.is_active = 1
     </select>
 
-    <!-- userId로 사용자 조회 (JWT 필터) -->
     <select id="findAuthUserById" resultType="AuthUser">
         SELECT au.user_id, au.staff_id, au.username, au.hashed_password,
                au.last_login, au.is_active AS active,
@@ -96,16 +81,31 @@
         WHERE au.user_id = #{userId}
     </select>
 
-    <!-- 마지막 로그인 시간 업데이트 -->
     <update id="updateLastLogin">
         UPDATE auth_users SET last_login = GETDATE() WHERE user_id = #{userId}
     </update>
 
-    <!-- 비밀번호 변경 -->
     <update id="updatePassword">
-        UPDATE auth_users
-        SET hashed_password = #{hashedPassword}
-        WHERE staff_id = #{staffId}
+        UPDATE auth_users SET hashed_password = #{hashedPassword} WHERE staff_id = #{staffId}
     </update>
+
+    <select id="findPendingUsers" resultType="AuthUser">
+        SELECT au.user_id, au.staff_id, au.username, au.is_active AS active,
+               s.name AS staff_name, s.role, s.store_id,
+               st.name AS store_name
+        FROM auth_users au
+        JOIN staff s  ON au.staff_id = s.staff_id
+        JOIN stores st ON s.store_id  = st.store_id
+        WHERE au.is_active = 0
+        ORDER BY au.user_id DESC
+    </select>
+
+    <update id="approveUser">
+        UPDATE auth_users SET is_active = 1 WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deletePendingUser">
+        DELETE FROM auth_users WHERE user_id = #{userId}
+    </delete>
 
 </mapper>
