@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.accessory.mapper.ProductMapper">
+
+    <!-- 상품 목록 (페이징 + 필터) -->
+    <select id="findProducts" resultType="Product">
+        SELECT product_id, name, category, brand,
+               cost_price, selling_price,
+               is_active AS active,
+               created_at, updated_at
+        FROM products
+        <where>
+            <if test="category != null and category != ''">AND category = #{category}</if>
+            <if test="brand != null and brand != ''">AND brand = #{brand}</if>
+            <if test="active != null">AND is_active = #{active}</if>
+        </where>
+        ORDER BY product_id DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- 상품 수 -->
+    <select id="countProducts" resultType="int">
+        SELECT COUNT(*) FROM products
+        <where>
+            <if test="category != null and category != ''">AND category = #{category}</if>
+            <if test="brand != null and brand != ''">AND brand = #{brand}</if>
+            <if test="active != null">AND is_active = #{active}</if>
+        </where>
+    </select>
+
+    <!-- 상품 단건 -->
+    <select id="findProductById" resultType="Product">
+        SELECT product_id, name, category, brand,
+               cost_price, selling_price,
+               is_active AS active,
+               created_at, updated_at
+        FROM products
+        WHERE product_id = #{productId}
+    </select>
+
+    <!-- 상품 등록 -->
+    <insert id="insertProduct" parameterType="Product" useGeneratedKeys="true" keyProperty="productId">
+        INSERT INTO products (name, category, brand, cost_price, selling_price, is_active, created_at, updated_at)
+        VALUES (#{name}, #{category}, #{brand}, #{costPrice}, #{sellingPrice}, #{active}, GETDATE(), GETDATE())
+    </insert>
+
+    <!-- 상품 수정 -->
+    <update id="updateProduct" parameterType="Product">
+        UPDATE products
+        SET name          = #{name},
+            category      = #{category},
+            brand         = #{brand},
+            cost_price    = #{costPrice},
+            selling_price = #{sellingPrice},
+            is_active     = #{active},
+            updated_at    = GETDATE()
+        WHERE product_id = #{productId}
+    </update>
+
+    <!-- 상품별 옵션 목록 -->
+    <select id="findVariantsByProductId" resultType="ProductVariant">
+        SELECT v.variant_id, v.product_id,
+               v.color, v.size, v.material, v.sku,
+               v.is_active AS active,
+               p.name AS product_name, p.category, p.brand
+        FROM product_variants v
+        INNER JOIN products p ON p.product_id = v.product_id
+        WHERE v.product_id = #{productId}
+        ORDER BY v.variant_id
+    </select>
+
+    <!-- 옵션 단건 -->
+    <select id="findVariantById" resultType="ProductVariant">
+        SELECT v.variant_id, v.product_id,
+               v.color, v.size, v.material, v.sku,
+               v.is_active AS active,
+               p.name AS product_name, p.category, p.brand
+        FROM product_variants v
+        INNER JOIN products p ON p.product_id = v.product_id
+        WHERE v.variant_id = #{variantId}
+    </select>
+
+    <!-- 옵션 등록 -->
+    <insert id="insertVariant" parameterType="ProductVariant" useGeneratedKeys="true" keyProperty="variantId">
+        INSERT INTO product_variants (product_id, color, size, material, sku, is_active)
+        VALUES (#{productId}, #{color}, #{size}, #{material}, #{sku}, #{active})
+    </insert>
+
+    <!-- 옵션 수정 -->
+    <update id="updateVariant" parameterType="ProductVariant">
+        UPDATE product_variants
+        SET color     = #{color},
+            size      = #{size},
+            material  = #{material},
+            sku       = #{sku},
+            is_active = #{active}
+        WHERE variant_id = #{variantId}
+    </update>
+
+</mapper>

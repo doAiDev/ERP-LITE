@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.accessory.mapper.AuditMapper">
+
+    <insert id="insertAuditLog" parameterType="AuditLog">
+        INSERT INTO audit_logs (staff_id, action, table_name, record_id, old_value, new_value, created_at)
+        VALUES (
+            #{staffId},
+            #{action},
+            #{targetTable},
+            <choose>
+                <when test="targetId != null">TRY_CAST(#{targetId} AS INT)</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            #{oldValue},
+            #{newValue},
+            GETDATE()
+        )
+    </insert>
+
+</mapper>

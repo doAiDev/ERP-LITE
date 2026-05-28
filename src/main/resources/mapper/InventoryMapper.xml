@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.accessory.mapper.InventoryMapper">
+
+    <select id="findInventory" resultType="StoreInventory">
+        SELECT si.inventory_id, si.store_id, si.variant_id, si.quantity, si.min_quantity, si.updated_at,
+               st.name AS store_name,
+               p.name  AS product_name, p.category, p.brand,
+               v.color, v.size, v.material, v.sku,
+               CASE WHEN si.quantity &lt; si.min_quantity THEN 1 ELSE 0 END AS low_stock
+        FROM store_inventory si
+        INNER JOIN stores st           ON st.store_id   = si.store_id
+        INNER JOIN product_variants v  ON v.variant_id  = si.variant_id
+        INNER JOIN products p          ON p.product_id  = v.product_id
+        <where>
+            <if test="storeId != null">AND si.store_id = #{storeId}</if>
+            <if test="category != null and category != ''">AND p.category = #{category}</if>
+            <if test="lowStockOnly != null and lowStockOnly">AND si.quantity &lt; si.min_quantity</if>
+        </where>
+        ORDER BY p.name, v.sku
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countInventory" resultType="int">
+        SELECT COUNT(*)
+        FROM store_inventory si
+        INNER JOIN product_variants v ON v.variant_id = si.variant_id
+        INNER JOIN products p         ON p.product_id = v.product_id
+        <where>
+            <if test="storeId != null">AND si.store_id = #{storeId}</if>
+            <if test="category != null and category != ''">AND p.category = #{category}</if>
+            <if test="lowStockOnly != null and lowStockOnly">AND si.quantity &lt; si.min_quantity</if>
+        </where>
+    </select>
+
+    <select id="findLowStock" resultType="StoreInventory">
+        SELECT si.inventory_id, si.store_id, si.variant_id, si.quantity, si.min_quantity, si.updated_at,
+               st.name AS store_name,
+               p.name  AS product_name, p.category, p.brand,
+               v.color, v.size, v.material, v.sku,
+               1 AS low_stock
+        FROM store_inventory si
+        INNER JOIN stores st           ON st.store_id   = si.store_id
+        INNER JOIN product_variants v  ON v.variant_id  = si.variant_id
+        INNER JOIN products p          ON p.product_id  = v.product_id
+        WHERE si.quantity &lt; si.min_quantity
+        <if test="storeId != null">AND si.store_id = #{storeId}</if>
+        ORDER BY si.quantity ASC
+    </select>
+
+    <select id="findByStoreAndVariant" resultType="StoreInventory">
+        SELECT inventory_id, store_id, variant_id, quantity, min_quantity, updated_at
+        FROM store_inventory
+        WHERE store_id = #{storeId} AND variant_id = #{variantId}
+    </select>
+
+    <update id="setQuantity">
+        UPDATE store_inventory
+        SET quantity = #{quantity}, updated_at = GETDATE()
+        WHERE store_id = #{storeId} AND variant_id = #{variantId}
+    </update>
+
+    <update id="adjustQuantity">
+        UPDATE store_inventory
+        SET quantity = quantity + #{delta}, updated_at = GETDATE()
+        WHERE store_id = #{storeId} AND variant_id = #{variantId}
+    </update>
+
+    <insert id="upsertInventory">
+        MERGE INTO store_inventory AS target
+        USING (SELECT #{storeId} AS store_id, #{variantId} AS variant_id) AS source
+        ON (target.store_id = source.store_id AND target.variant_id = source.variant_id)
+        WHEN MATCHED THEN
+            UPDATE SET quantity = #{quantity}, min_quantity = #{minQuantity}, updated_at = GETDATE()
+        WHEN NOT MATCHED THEN
+            INSERT (store_id, variant_id, quantity, min_quantity, updated_at)
+            VALUES (#{storeId}, #{variantId}, #{quantity}, #{minQuantity}, GETDATE());
+    </insert>
+
+</mapper>
